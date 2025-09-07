@@ -2,7 +2,7 @@ name: Build APK
 
 on:
   push:
-    branches: [ main ]   # Runs when you push to "main" branch
+    branches: [ main ]
 
 jobs:
   build:
@@ -20,16 +20,14 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y python3-pip git zip unzip openjdk-17-jdk
+          sudo apt install -y python3-pip git zip unzip openjdk-17-jdk wget
           pip install buildozer cython
 
-      - name: Build APK
+      - name: Install Android SDK & NDK
         run: |
-          buildozer init || true
-          buildozer -v android debug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: calculator-apk
-          path: bin/*.apk
+          mkdir -p $HOME/.buildozer/android/platform
+          cd $HOME/.buildozer/android/platform
+          # Install commandlinetools (SDK manager)
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdtools.zip
+          unzip cmdtools.zip -d cmdline-tools
+         
