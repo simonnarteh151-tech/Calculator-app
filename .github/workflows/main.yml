@@ -17,39 +17,23 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt update
-          sudo apt install -y python3-pip git zip unzip openjdk-17-jdk wget
+          sudo apt install -y python3-pip git zip unzip openjdk-17-jdk wget libncurses5
+
+      - name: Install Buildozer
+        run: |
+          pip install --upgrade pip
           pip install buildozer cython
 
-      - name: Install Android SDK & NDK
+      - name: Run Buildozer (auto-install SDK/NDK)
         run: |
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
-          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-          cd $ANDROID_SDK_ROOT/cmdline-tools
-          
-          # Download Android commandline tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdtools.zip
-          unzip cmdtools.zip
-          mv cmdline-tools latest
-          
-          # Add sdkmanager to PATH
-          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
-          
-          yes | sdkmanager --licenses
-          sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;23.1.7779620"
-
-      - name: Build APK
-        env:
-          ANDROIDSDK: $HOME/android-sdk
-          ANDROIDNDK: $HOME/android-sdk/ndk/23.1.7779620
-          ANDROID_SDK_ROOT: $HOME/android-sdk
-        run: |
-          buildozer -v android debug
+          buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: calculator-apk
           path: bin/*.apk
+          
