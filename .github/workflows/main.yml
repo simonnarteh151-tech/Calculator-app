@@ -2,7 +2,7 @@ name: Build APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main ]   # Runs when you push to "main" branch
 
 jobs:
   build:
@@ -29,8 +29,7 @@ jobs:
           buildozer -v android debug
 
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: calculator-apk
           path: bin/*.apk
-          
