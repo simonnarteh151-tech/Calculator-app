@@ -22,18 +22,34 @@ jobs:
           sudo apt update
           sudo apt install -y python3-pip git zip unzip openjdk-17-jdk wget libncurses5
 
-      - name: Install Buildozer
+      - name: Install Buildozer & Cython
         run: |
           pip install --upgrade pip
           pip install buildozer cython
 
-      - name: Run Buildozer (auto-install SDK/NDK)
+      - name: Install Android SDK + NDK
         run: |
-          buildozer android debug
+          export ANDROID_HOME=$HOME/android-sdk
+          export ANDROID_SDK_ROOT=$ANDROID_HOME
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          cd $ANDROID_HOME
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O tools.zip
+          unzip tools.zip -d cmdline-tools
+          mv cmdline-tools/cmdline-tools cmdline-tools/latest
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;23.1.7779620"
+
+      - name: Build APK
+        env:
+          ANDROIDSDK: $HOME/android-sdk
+          ANDROIDNDK: $HOME/android-sdk/ndk/23.1.7779620
+          ANDROID_HOME: $HOME/android-sdk
+          ANDROID_SDK_ROOT: $HOME/android-sdk
+        run: |
+          buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: calculator-apk
           path: bin/*.apk
-          
