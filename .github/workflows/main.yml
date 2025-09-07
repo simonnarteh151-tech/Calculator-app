@@ -27,7 +27,24 @@ jobs:
         run: |
           mkdir -p $HOME/.buildozer/android/platform
           cd $HOME/.buildozer/android/platform
-          # Install commandlinetools (SDK manager)
+          # Download commandline tools
           wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdtools.zip
           unzip cmdtools.zip -d cmdline-tools
-         
+          mkdir -p $HOME/.buildozer/android/platform/cmdline-tools/latest
+          mv cmdline-tools/* $HOME/.buildozer/android/platform/cmdline-tools/latest/
+          export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform
+          yes | $HOME/.buildozer/android/platform/cmdline-tools/latest/bin/sdkmanager --licenses
+          $HOME/.buildozer/android/platform/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;23.1.7779620"
+
+      - name: Build APK
+        env:
+          ANDROIDSDK: $HOME/.buildozer/android/platform
+          ANDROIDNDK: $HOME/.buildozer/android/platform/ndk/23.1.7779620
+        run: |
+          buildozer -v android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: calculator-apk
+          path: bin/*.apk
